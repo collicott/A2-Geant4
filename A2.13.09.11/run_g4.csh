@@ -6,7 +6,7 @@ set experiment = compton
 
 # PROCESS
 #set processes = "pi0"
-set processes = "compton"
+set processes = "compton pi0"
 #set processes = eff
 
 # TARGET
