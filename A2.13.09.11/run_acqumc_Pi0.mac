@@ -1,0 +1,9 @@
+/A2/physics/Physics QGSP_BIC
+/run/initialize
+/A2/generator/Seed 1111111
+/A2/generator/NToBeTracked 3
+/A2/generator/Track 1
+/A2/generator/Track 2
+/A2/generator/Track 3
+/A2/generator/InputFile $HOME/Root/acquMC/output/Pi0_mc_out.root
+/A2/event/setOutputFile out/acquMC/Pi0_g4_out.root

@@ -1,0 +1,1766 @@
+#LyX 1.4.5.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 245
+\begin_document
+\begin_header
+\textclass article
+\language english
+\inputencoding auto
+\fontscheme default
+\graphics default
+\paperfontsize default
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\cite_engine basic
+\use_bibtopic false
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes true
+\end_header
+
+\begin_body
+
+\begin_layout Title
+A Geant4 simulation for the CrystalBall@MAMI Setup
+\end_layout
+
+\begin_layout Author
+Derek Glazier, University of Edinburgh
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+As advances in Geant3 particle tracking were discontinued a number of years
+ ago, it is clear that to achieve as realistic a simulation as possible
+ a move to Geant4 is required.
+ In particular simulation of hadronic interactions is thought to be much
+ improved with G4 and detailed validation exercises have been carried out.
+ G4 uses object-orientated C++ programming.
+\end_layout
+
+\begin_layout Standard
+The code included here contains a G4 simulation for the CB, TAPS, PID, MWPC,
+ ToF detector setup for the first and second round of experiments at MAMI.
+ 
+\end_layout
+
+\begin_layout Standard
+This report will outline the structure and the status of the simulation,
+ named 
+\emph on
+A2
+\emph default
+, as well as giving some instructions for installing and running, and finally
+ list some thoughts on what still needs to be done.
+\end_layout
+
+\begin_layout Section
+Installation
+\end_layout
+
+\begin_layout Standard
+Installation of this simulation requires a pre-installed release of G4.
+ Users should refer to the G4 webpage for details.
+ The simulation has now been upgraded to run with version Geant4.8.2 and Geant4.8.3
+ and it is strongly recommended that one of these versions is installed,
+ but it should also run with Geant4.8.1.p01.
+ The main difference for the user is that the hadronic physics lists are
+ now packed with the main source code and do not require explicit compilation
+ and inclusion into the Makefile.
+ For running Geant4.8.1.p01 the physics lists should be compiled by hand.
+\end_layout
+
+\begin_layout Standard
+After the G4 system is installed the user is recommended to try and compile
+ a few of the G4 examples.
+ 
+\end_layout
+
+\begin_layout Standard
+The code package can currently be downloaded from http://nuclear.physics.gla.ac.uk/~
+dglazier/A2.
+ The user can then unpack A2 into their G4WORKDIR and make.
+ A2 uses a ROOT based input/output and so the variable $ROOTSYS should be
+ defined.
+ The executable A2 should be found in $G4WORKDIR/bin/$G4SYSTEM/.
+ 
+\end_layout
+
+\begin_layout Standard
+How to run the simulation is explained in sec.
+ 
+\begin_inset LatexCommand \ref{sec:Running-the-simulation}
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Section
+The A2 Package
+\end_layout
+
+\begin_layout Standard
+The A2 directory contains all the additional code required to make the simulatio
+n work including some example macros for running the simulation in either
+ batch or interactive mode.
+ The directories contain : 
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+docs the user manuals, currently this document!
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+cbsim relevant files from cbsim and the ROOT conversions
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+macros macro files to control the batch and interactive running of the simulatio
+n
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+include the .hh files for the new A2 classes
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+src the .cc files for the new A2 classes
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+pics some graphics created by A2
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+acquroot contains new files required for running with AcquRoot
+\end_layout
+
+\begin_layout Standard
+The file A2.cc controls the simulation by creating the A2 classes and assigning
+ them to the G4 manager classes.
+ It then allows an interactive session to be run if no initial macro is
+ given, i.e just the command A2 is given.
+ Or runs in batch mode if a run macro is given, e.g.
+ A2 macros/doppi0.mac.
+\end_layout
+
+\begin_layout Standard
+The files GNUmakefile and hadronic_lists.gmk are required for compilation.
+ The file G4History.macro is produced by A2 and saves the interactive commands
+ given.
+\end_layout
+
+\begin_layout Standard
+The files CrystalConvert.in and taps.dat come from cbsim and allow a meaningful
+ readout of the detectors.
+ taps07.dat contains the setup for the new TAPS configuration.
+\end_layout
+
+\begin_layout Section
+Geometry
+\end_layout
+
+\begin_layout Standard
+The A2 class A2DetectorConstruction is responsible for all of the geometry
+ built.
+ Currently it can call on three detector setups the Crystal Ball, TAPS and
+ the PID.
+ The Wire Chambers are still to be implemented.
+\end_layout
+
+\begin_layout Standard
+Each detector has it's own class and A2DetectorConstruction decides whether
+ to build it based on a setup macro, see sec.
+\begin_inset LatexCommand \ref{sub:Detector-Setup}
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Materials
+\end_layout
+
+\begin_layout Standard
+The majority of materials needed are defined via a NIST database, implemented
+ via the G4NistManager class.
+ A list of the NIST defined materials can be found by typing /material/nist/list
+Materials, at the Idle> prompt, or in the file $G4INSTALL/source/materials/src/G
+4NistMaterialBuilder.cc.
+\end_layout
+
+\begin_layout Standard
+Some materials from cbsim are not found in the NIST database and have been
+ entered 
+\begin_inset Quotes eld
+\end_inset
+
+by hand
+\begin_inset Quotes erd
+\end_inset
+
+ in A2DetectorConstruction.cc.
+ The extra materials are rohacell, fibreglass, plastic (for PID lightguide),
+ mumetal and LD2.
+ 
+\end_layout
+
+\begin_layout Subsection
+The Crystal Ball
+\end_layout
+
+\begin_layout Standard
+The geometry used for the Crystal Ball and surrounding material was taken
+ from the cbsim file of A.Starostin.
+ This can be found in the A2/cbsim directory as ugeom_sasha.F.
+\end_layout
+
+\begin_layout Subsubsection
+Software import from ugeom.F
+\end_layout
+
+\begin_layout Standard
+Two methods were tried to export the crystal ball geometry directly from
+ the cbsim file ugeom.F.
+\end_layout
+
+\begin_layout Standard
+The first was to use the G3toG4 utilities which are part of the G4 libraries.
+ This requires an .rz file of the geometry to be produced by cbsim
+\begin_inset Foot
+status collapsed
+
+\begin_layout Standard
+To do this you need to add the line: call grfile(21,
+\begin_inset Quotes erd
+\end_inset
+
+crystalball.rz
+\begin_inset Quotes erd
+\end_inset
+
+,
+\begin_inset Quotes erd
+\end_inset
+
+ON
+\begin_inset Quotes erd
+\end_inset
+
+) 
+\end_layout
+
+\begin_layout Standard
+after call GGCLOS in ugeom.F
+\end_layout
+
+\end_inset
+
+.
+ The first problem with this method was the Trap shape used in G4 does not
+ accept sides with zero length, which had been used in cbsim to construct
+ the triangular faces of the crystals.
+ However Ken Livingston showed that this could be bypassed by a simple fix
+ in the G4Trap class.
+ After this G4 was able to produce a reasonable visualised likeness to the
+ CB and TAPS, however attempts to track particles through the CB failed
+ as they never underwent any interactions.
+\end_layout
+
+\begin_layout Standard
+Fortran .rz file can be converted to ROOT readable format via the ROOT utility
+ rz2root, so a second attempt to pass cbsim to G4 was made via ROOT's xml
+ interface.
+ This failed due to a mismatch in the syntax of the ROOT xml output and
+ G4 xml input files.
+ However even if such a scheme had been successful it almost certainly would
+ have also failed to track the particles (for reasons explained below).
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Manual import
+\end_layout
+
+\begin_layout Standard
+After attempting the two software conversions I decided the best solution
+ would be to manually rewrite the Fortran code in C++ using the G4 libraries.
+ This was realised with the A2DetCrystalBall class.
+ When writing the detector I used both the files ugeom_sasha.F and cbsasha.C
+ (the ROOT conversion) in A2/cbsim for guidance.
+ To simplify matters for myself I decided not to rewrite the prism.F function,
+ which calculates the crystal, major and minor triangle parameters, but
+ to just take the calculated results from the exported ROOT file cbsasha.C.
+\end_layout
+
+\begin_layout Standard
+Initially I followed the cbsim recipe for placing the crystals first in
+ Minor triangles, then the Minors in Major triangles, then the Majors in
+ Hemispheres, then the Hemispheres in the Ball Volume.
+ The crystals were again given a Trap volume, however instead of setting
+ one side=0cm I have instead set it to 1nm, so G4 will not complain about
+ the zero length.
+ 
+\end_layout
+
+\begin_layout Standard
+This produced a CB that looked as expected.
+ However, again when I fired the particles no interactions occurred in the
+ ball!
+\end_layout
+
+\begin_layout Standard
+The problem lies with the way G4 handles overlapping volumes.
+ The fact the two hemispheres nearly exactly overlap meant G4 was unable
+ to determine which hemisphere's daughter volumes, i.e Major triangles, it
+ was in.
+ 
+\end_layout
+
+\begin_layout Standard
+To overcome this I got rid of the 2 hemisphere volumes and place the Major
+ triangles directly in the ball volume and applied the rotation and translation
+ of the hemispheres directly to the Major Triangles.
+ This appeared to give success as particles fired at the ball now interacted.
+\end_layout
+
+\begin_layout Standard
+However it turned out the problem still existed close to the equator of
+ the ball, the reason being that Major triangles here exist for both the
+ upper and lower halves.
+\end_layout
+
+\begin_layout Standard
+My eventual solution to the overlaps problem was to place each crystal individua
+lly into the World volume.
+ Each crystal is rotated and translated by the product of the transforms
+ for it's Minor, Major and Hemisphere.
+\end_layout
+
+\begin_layout Standard
+Every crystal now tracks particles!
+\end_layout
+
+\begin_layout Standard
+The next issue to resolve was for the cut crystals in the tunnel regions.
+ Previously this was realised by placing one overriding volume CCUT in the
+ ball.
+ For G4 I chose to subtract off this volume from each individual crystal
+ before placing it in the World volume.
+ This is done via the G4SubtractionSolid class, and just needs the same
+ translation and rotation information as used in placing the crystals and
+ so prove to be relatively straightforward.
+ The cut crystals can be visualised using the RayTracer visualisation and
+ if you look down the beamline you can see that the crystals stop at the
+ tunnel
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Caption
+\begin_inset Graphics
+	filename ../pics/CutCrystals.jpeg
+	width 30page%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset LatexCommand \label{fig:The-cut-crystal}
+
+\end_inset
+
+The cut crystals of the ball.
+\end_layout
+
+\end_inset
+
+.
+ In addition I was able to convince to myself that it did work by firing
+ particles into the region that should be cut and seeing no interactions.
+\end_layout
+
+\begin_layout Subsection
+TAPS
+\end_layout
+
+\begin_layout Standard
+The TAPS detector was implemented from a straight interpretation of the
+ ugeom_taps.F code.
+ The class is called A2DetTAPS.
+ One slight change I have made is to readout every taps veto detector that
+ fires, previously it was only read if it's corresponding BaF2 crystal fired.
+ Someone can inform me if I should change back.
+\end_layout
+
+\begin_layout Standard
+TAPS can be configured without the need for recompilation by specifying
+ an input file eg.
+ taps.dat or taps07.dat for the smaller TAPS, the number of active crystals
+ and the distance from the centre of the ball, see section 
+\begin_inset LatexCommand \ref{sub:Detector-Setup}
+
+\end_inset
+
+ for details.
+ By this means TAPS can be setup in it's original configuration or it's
+ new for 2007 configuration by changing a few lines in the setup macro.
+ 
+\end_layout
+
+\begin_layout Standard
+Figure 
+\begin_inset LatexCommand \ref{CB-TAPS}
+
+\end_inset
+
+ shows a visualisation of the CB-TAPS detectors.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename ../pics/CBTAPS.eps
+	width 60page%
+	keepAspectRatio
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Caption
+\begin_inset LatexCommand \label{CB-TAPS}
+
+\end_inset
+
+A picture of the CB-TAPS setup using DAWN visualisation.
+ Unfortunately the drawing is not perfect, but this is due to the visualisation
+ driver not colouring the right areas and not the actual geometry.
+ Note, TAPS vetos are in blue and dummies are in red.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+The PID
+\end_layout
+
+\begin_layout Standard
+The implementation for the PID varies from the original, as a more realistic
+ right angular wedge shape is used for the scintillator shape, rather than
+ a symmetric trapezoid.
+ The effect of the change should be small.
+\end_layout
+
+\begin_layout Standard
+PID 2 is also available for use and can be sepecified in the DetectorSetup.mac
+ file.
+ PID2 is rotated by 
+\begin_inset Formula $180^{\circ}$
+\end_inset
+
+ compared to PID1 and the support structures are made from plastic, to give
+ less material at the downstream end.
+ The scintillators are 4mm thick compared to 2mm.
+\end_layout
+
+\begin_layout Standard
+The rotation invalidates the PID_MC.dat AcquRoot file, a new one PID2_MC.dat
+ is in the acquroot directory.
+
+\color red
+ 
+\end_layout
+
+\begin_layout Subsection
+MWPC
+\end_layout
+
+\begin_layout Subsubsection
+Pre-MAMI-C
+\end_layout
+
+\begin_layout Standard
+The MWPCs have been implemented by Jamie Robinson of Glasgow University.
+ He has preformed a straight translation of the ugeom.F wire chambers including
+ the modifications of Kashevarov.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+MAMI-C
+\end_layout
+
+\begin_layout Standard
+The newly constructed wirechambers have initially been implemented by David
+ Howdle of Glasgow University.
+ Note the anode wires are only constructed if the useMWPC command is given
+ a 2 instead of a 1, this is in case they add a large increase in overhead
+ with little change in efficiencies.
+ In addition to constructing the wirechamber materials a basic readout has
+ been implemented.
+ the position of a particle as it passes through a cathode layer (of which
+ there are 4) is saved to the output ntuple for analysis.
+ A basic ReadDecoded algorithm has been added to the TA2CylMWPC class (found
+ in the A2/acquroot directory) to reconstruct tracks and a sample setup
+ file MWPC_G4A2.dat is also in the acquroot directory, this is an alternative
+ to the ReadDecoded method of Sven Schumann which smears the initial proton
+ momentum vector.
+ The additional branches have been added to the CB_A2MC.Offline file and
+ users may need to replace the MCBranchID.h in their acqu_sys/AcquRoot/src
+ directory to make sure the MWPC branches are added.
+\end_layout
+
+\begin_layout Subsection
+Targets
+\end_layout
+
+\begin_layout Standard
+A choice of either cryo (for LH2, LD2) or solid target have been added.
+ These were taken from ugeom_target.F and ugeom_solid_target.F respectively.
+ The solid target has hardwired lengths for Lithium, graphite, calcium and
+ lead as found in ugeom_solid_target.F, if other materials are needed the
+ lengths should be put onto A2SolidTarget.cc.
+ Instructions on how to select target and material are given in 
+\begin_inset LatexCommand \ref{sub:Detector-Setup}
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Trigger
+\end_layout
+
+\begin_layout Standard
+Currently the only trigger put on the tracking is that all particles are
+ killed after 1ms.
+ This is implemented in the A2SteppingAction.cc UserSteppingAction function.
+ Users can change the trigger time here.
+ In principle a more accurate trigger should implemented.
+\end_layout
+
+\begin_layout Subsection
+ToF
+\end_layout
+
+\begin_layout Standard
+Tests have been recently carried out towards adding a time-of-flight to
+ the A2 CB setup and so a general TOF class has now been added to the A2
+ simulation.
+ The dimensions of the bars and positions can be set via a parameter file
+ so users can try out their own geometeries.
+ These can then be read into AcquRoot with the addition of a few files contained
+ in the A2/acquroot/tof directory from release A2.06.05.
+ I will include full instructions in this section so it is easier for folks
+ to add in.
+\end_layout
+
+\begin_layout Subsubsection
+Modifications to G4 A2 code
+\end_layout
+
+\begin_layout Standard
+The main change is the addition of the A2DetTOF class.
+ At the moment this will just construct bars of plastic scintillator with
+ no extra materials.
+ The geometry can be set using a parameter file, see for example TOF.par.
+ Upon running the simulation a new file TOFpos.dat will be generated, this
+ gives the positions of the (virtual) photomultipliers which are required
+ for the AcquRoot detector setup files when using the TA2LongScint class.
+\end_layout
+
+\begin_layout Standard
+In addition to this new class, changes were made to the A2DetectorContruction
+ and A2DetectorMessenger classes to allow the TOF to be switched on from
+ the DetectorSetup.mac.
+\end_layout
+
+\begin_layout Standard
+Also the A2CBOutput class contains extra branches if TOF is being used :
+ 
+\end_layout
+
+\begin_layout Itemize
+tofe, energy deposited in a tof bar 
+\end_layout
+
+\begin_layout Itemize
+toft, time of flight of bar
+\end_layout
+
+\begin_layout Itemize
+tofi, index of bar
+\end_layout
+
+\begin_layout Itemize
+tofx, x hit position
+\end_layout
+
+\begin_layout Itemize
+tofy, y hit position
+\end_layout
+
+\begin_layout Itemize
+tofz, z hit position
+\end_layout
+
+\begin_layout Subsubsection
+Running A2 with TOF
+\end_layout
+
+\begin_layout Standard
+This just requires the additional lines in DetectorSetup.mac :
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+\color blue
+/A2/det/useTOF 1 
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+\color blue
+/A2/det/setTOFFile TOF.par
+\end_layout
+
+\begin_layout Standard
+The file TOF.par for 1 veto layer and 2 tof layers is arranged like this
+\begin_inset Foot
+status collapsed
+
+\begin_layout Standard
+the current AcquRoot interface assumes vetos are defined before the real
+ tof bars.
+\end_layout
+
+\end_inset
+
+, (the comments are only in this manual) :
+\end_layout
+
+\begin_layout Standard
+2 ////number of walls, wall
+\begin_inset Formula $\Rightarrow$
+\end_inset
+
+same dimension of bars, so 1 for veto 1 for tof bars 
+\end_layout
+
+\begin_layout Standard
+8 ////number of bars in a layer of 1st wall
+\end_layout
+
+\begin_layout Standard
+1 ////number of layers of 1st wall
+\end_layout
+
+\begin_layout Standard
+0 ////orientation (rotation of layer wrt z-axis), 0
+\begin_inset Formula $\Rightarrow$
+\end_inset
+
+vertical aligned 90
+\begin_inset Formula $\Rightarrow$
+\end_inset
+
+horizontal
+\end_layout
+
+\begin_layout Standard
+20 300 1 ////bar dimensions x y z (cm), before rotation
+\end_layout
+
+\begin_layout Standard
+0 ////additional transverse offset of bars (allows overlapping etc.)
+\end_layout
+
+\begin_layout Standard
+0 0 293 //// position of center in the lab x y z (cm)
+\end_layout
+
+\begin_layout Standard
+8 ////number of bars per layer in 2nd wall
+\end_layout
+
+\begin_layout Standard
+2 ////number of layers in 2nd wall
+\end_layout
+
+\begin_layout Standard
+0 0 ////orientation of each layer i.e both vertical
+\end_layout
+
+\begin_layout Standard
+20 300 5 ////dimensions of bars in 2nd layer
+\end_layout
+
+\begin_layout Standard
+0 ////additional transverse offset for bars in 2nd wall
+\end_layout
+
+\begin_layout Standard
+0 0 300 ////position of 2nd wall in lab.
+\end_layout
+
+\begin_layout Standard
+END ////don't forget the end comment!
+\end_layout
+
+\begin_layout Standard
+This should in principle allow most setups to be added in a simple manner,
+ (note I realise I still need to give the walls a rotaion parameter in case
+ the are not positioned perp.
+ to the z axis.
+ Note if you want two identical walls, postioned at different positon just
+ set the number of layers for the second equal to zero and it will copy
+ the previous wall.
+\end_layout
+
+\begin_layout Subsubsection
+Additional code for running AcquRoot
+\end_layout
+
+\begin_layout Standard
+Note the AcquRoot code for ToF has been implemented by John Annand users
+ should find the ToF interface with the AcquRoot code.
+\end_layout
+
+\begin_layout Standard
+
+\color red
+There is already some utilities for scintilltor bars in AcquRoot, inparticular
+ the class TA2LongScint can be found in the $acqu_sys source.
+ I have therefore just used this class to interface the TOF simulation,
+ in practise all that was required was an implementation of the ReadDecoded
+ function.
+ Users should probably familiarise themselves with this function and class
+ before trying too much, basically it assumes each photomultiplier a detector
+ and combines two into a bar, reconstructing time of flight, energy and
+ time difference, which then gives the transverse hit position.
+ In the ReadDecoded I only fill the BarHits, MeanEnergyOR, MeanTimeOR and
+ TimeDiffOR arrays and calculate the hit position.
+ One important point is the G4 simulation assumes the vetos have the first
+ numerical indices and so you are required to tell TA2LongScint how many
+ veto bars are used so it can either use them as vetos or ignore them in
+ the case of real ToF bars.
+ This is done with the line NVetos: 8 in the LongScint_MC.dat file.
+ Again it is worth noting that the postions of each PMT is given in the
+ simualtion TOFpos.dat file and these can be cut and pasted direcly into
+ the LongScint_MC.dat file, the positions output will automatically give
+ the correct position indexing for reading the simulated data.
+\end_layout
+
+\begin_layout Standard
+
+\color red
+The only other file touched in the $acqu_sys code is the MCBranchID.h which
+ now includes the branches outlined above, and used in TA2LongScint::ReadDecoded.
+\end_layout
+
+\begin_layout Standard
+
+\color red
+To test the simulation I have also implemeted a first go TOF apparatus for
+ AcquRoot, this is the class TA2TOF.cc.
+ To use this the source should be copied from A2/acquroot/tof/UserSrc to
+ your own acqu/root/src directory.
+ TA2UserAnalysis should be modified to include this new apparatus (just
+ copy whatever you see done for TAPS), and the class should be included
+ in UserLinkDef.h.
+ Each user probably has there own version of these so I will not at the
+ moment try to give a new version of these.
+\end_layout
+
+\begin_layout Standard
+
+\color red
+The TA2TOF class contains two detectors (TA2LongScint) veto and real TOFs,
+ these have the setup files LongVeto_MC.dat and LongScint_MC.dat respectively,
+ note the veto one has NVetos: -1 so it knows to read in the veto section
+ of the simulated file.
+\end_layout
+
+\begin_layout Standard
+
+\color red
+The recontruct function then looks for some angular coincidences between
+ different bars and vetos and tries to do some PID using the 2D cuts similar
+ to the PID and NAI in the TA2CrystalBall class.
+ I have already generated cut files for protons, neutrons and gammas but
+ not pions yet, these are included in the A2/acquroot/tof/UserData directory.
+ Finally if the particle is a nucleon the energy is calculated from its
+ time-of-flight.
+\end_layout
+
+\begin_layout Standard
+
+\color red
+The full UserData tree for stand alone tof analysis is given in the A2/acquroot/
+tof/UserData directory with TOFMC.Offline being the head.
+\end_layout
+
+\begin_layout Standard
+
+\color red
+Below is a visualisation of the CB-TOF setup.
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Graphics
+	filename /phys/linux/dglazier/geant4/A2/pics/CBTOF.eps
+	scale 80
+	keepAspectRatio
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+\begin_inset LatexCommand \label{sec:Physics-Processes-and}
+
+\end_inset
+
+Physics Processes and Models 
+\end_layout
+
+\begin_layout Standard
+The main reason for transferring to Geant4 is to utilise up-to-date physics
+ models.
+ G4 provides detailed information on all of it's processes and models in
+ its Physics Reference Manual, available on its website.
+ 
+\end_layout
+
+\begin_layout Subsection
+Electromagnetic Physics
+\end_layout
+
+\begin_layout Standard
+The electromagnetic physics package is well established and it is expected
+ that the 
+\begin_inset Quotes eld
+\end_inset
+
+standard package
+\begin_inset Quotes erd
+\end_inset
+
+ will be optimum for our purposes.
+ G4 also offers a 
+\begin_inset Quotes eld
+\end_inset
+
+fast
+\begin_inset Quotes erd
+\end_inset
+
+ model which gives quicker computional performance at some loss of accuracy,
+ but may be sufficient.
+ Processes included are :
+\end_layout
+
+\begin_layout Standard
+For charged particles: Multiple Scattering, Ionisation, Bremsstrahlung,
+ Synchotron, Cerenkov, Transition Radiation, High Energy Muon Processes
+ and Annihilation.
+\end_layout
+
+\begin_layout Standard
+And for gammas: Compton, Pair Production, Photo-Electric.
+\end_layout
+
+\begin_layout Standard
+These models are developed from the Geant3.2.1 package and include bug fixes
+ and further development.
+\end_layout
+
+\begin_layout Standard
+Just to note, G4 also supplies a Low Energy package which extends these
+ interactions below kEV, and an optical photon package, which can be used
+ for example to track scintillation light using reflection, refraction,
+ absorbtion, Rayleigh and wavelength shifting.
+\end_layout
+
+\begin_layout Subsection
+Hadronic Physics
+\end_layout
+
+\begin_layout Standard
+Geant3.2.1 utilised either the GEISHA or FLUKA models for hadronic interactions
+ (+models from P.
+ Pedroni?).
+ In G4 GEISHA was converted into the G4LElastic and G4LEHadronicInelastic
+ models.
+ In addition a multitude of new models have been developed covering energies
+ from a fraction of a keV up to 1TeV.
+ It is up to the user which models they use and with a large choice of models
+ this can be a tricky task.
+ G4 does provide some standard PhysicsLists selecting applicable models,
+ to help and one of these should be sufficient for standard simulation.
+ I have implemented a flexible A2PhysicsList which allows some choice of
+ models at run time, for instructions on use see Section 
+\begin_inset LatexCommand \ref{sub:Physics-List}
+
+\end_inset
+
+.
+ For best simulation results these models should be tested and compared
+ on our detector setup with real experimental data.
+ A program of validation exersizes is planned and all users are incouraged
+ to make their own tests.
+\end_layout
+
+\begin_layout Standard
+G4 defines 3 types of Hadronic Model :
+\end_layout
+
+\begin_layout Description
+Tabulated based on large databases.
+\end_layout
+
+\begin_layout Description
+Parameterised faster, parameters determined from fits to data,
+\end_layout
+
+\begin_layout Description
+Theory-based parameters chosen by comparing with thin target data.
+\end_layout
+
+\begin_layout Standard
+As far is I am currently able to determine our energy regime is best described
+ by some of the theory-based models.
+ For inelastic channels these are the Cascade models (Binary and Bertini),
+ Chiral Invariant Phase Space models and perhaps a Pre-compund model.
+ For Elastic channels we should use the G4HadronElastic model.
+ These models are applicable for nucleons, pions, kaons, hyperons and ions.
+ For more details see the physics reference manual.
+\end_layout
+
+\begin_layout Standard
+For some purposes it may also be useful to utilise the high precision neutron
+ models based on a variety of databases.
+ This model is quoted as being valid from thermal energies up to 20MeV.
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+\color black
+Currently recommended Physics List is QGSP_BIC
+\end_layout
+
+\begin_layout Standard
+This uses the Binary Cascade model for inelastic hadronic interactions at
+ out energies.
+ 
+\end_layout
+
+\begin_layout Standard
+Note 
+\color black
+QGSP_BIC_EMV, has fast electromagnetic, QGSP_BIC_EMX has experimental electromag
+netic, (do not know what that means currently!).
+ With BERT the Bertini cascade model is used which is faster but possibly
+ not so accurate, though the results may be sufficient for our purposes.
+ If BIC or BERT is not specified then it defaults to the fast GEISHA type
+ parameterisation for inelastic hadronic interactions.
+ 
+\end_layout
+
+\begin_layout Section
+\begin_inset LatexCommand \label{sec:Running-the-simulation}
+
+\end_inset
+
+Running the simulation
+\end_layout
+
+\begin_layout Standard
+The simulation automatically checks the file DetectorSetup.mac to configure
+ the geometry for the run.
+ In addition the user can supply the name of a run macro for running in
+ batch mode, this includes information on the physics models used as well
+ as the event generator.
+ Alternatively the simulation can be run in interactive mode, see Sec.
+ 
+\begin_inset LatexCommand \ref{sub:Interactive-Mode}
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Subsection
+\begin_inset LatexCommand \label{sub:Detector-Setup}
+
+\end_inset
+
+Detector Setup
+\end_layout
+
+\begin_layout Standard
+Is controlled via the macros/DetectorSetup.mac file.
+ Users can edit this to built any subset of detector systems, by switching
+ the 1's to 0's.
+ By default : 
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/det/useCB 1 
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/det/useTAPS 1 
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+\color black
+Taps can be configured for its original or 2007 setup.
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+\color black
+position and ids
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/det/setTAPSFile taps.dat
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+\color black
+distance from centre of the ball
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/det/setTAPSZ 175 cm
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+\color black
+number of active crystals
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/det/setTAPSN 510
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+select PID1 (1) or PID2 (2) or no PID (0)
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/det/usePID 1
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+apply a z offset
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/det/setPIDZ 0.
+ cm
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+add in the wire chambers 1 or not 0
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/det/useMWPC 1
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+\color black
+The setup of the target is also done here :
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/det/useTarget Solid (or Cryo)
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/det/targetMaterial G4_Pb (or G4_Ca, ...)
+\end_layout
+
+\begin_layout Subsection
+\begin_inset LatexCommand \label{sub:Physics-List}
+
+\end_inset
+
+Physics List
+\end_layout
+
+\begin_layout Standard
+A brief discussion on the physics models is given in Sec.
+ 
+\begin_inset LatexCommand \ref{sec:Physics-Processes-and}
+
+\end_inset
+
+.
+ Selection of the physics list must be done pre-initialisation, 
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+\color black
+Choose a physics list, e.g.
+ QGSP_BIC, QGSP_BERT_EMV, LHEP...
+ 
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/physics/Physics QGSP_BIC 
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+\color black
+Initialise the simulation
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/run/initialize 
+\end_layout
+
+\begin_layout Standard
+
+\noun on
+Note
+\noun default
+ for interactice running this commands are called in the default macro vis.mac
+ that is run on initialisation.
+ 
+\end_layout
+
+\begin_layout Subsection
+\begin_inset LatexCommand \label{sub:mkin-Input}
+
+\end_inset
+
+mkin Input
+\end_layout
+
+\begin_layout Standard
+Users should obtain an mkin event generator file containing the reaction
+ particles of interest.
+ This file should be converted to ROOT via the h2root utility.
+ 2 examples of such files are available alongside this release, kin_pi0p_100000.r
+oot and mkin_pin_400mev.root.
+ The setup of A2 to read such files can be done either in batch or interactive
+ mode using the same commands.
+ Using the reaction 
+\begin_inset Formula $\gamma p\rightarrow p\pi^{0}$
+\end_inset
+
+ as an example (e.g.
+ kin_pi0p_100000.root), the command sequence follows :
+\end_layout
+
+\begin_layout Standard
+
+\emph on
+The number of particles to be tracked, 1 proton 2 photons
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/generator/NToBeTracked 3
+\end_layout
+
+\begin_layout Standard
+
+\emph on
+The mkin indexes of the particles to be tracked
+\end_layout
+
+\begin_layout Standard
+
+\emph on
+The proton
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/generator/Track 2
+\end_layout
+
+\begin_layout Standard
+
+\emph on
+The 2 photons
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/generator/Track 3 
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/generator/Track 4 
+\end_layout
+
+\begin_layout Standard
+
+\emph on
+Note, the 
+\begin_inset Formula $\pi^{0}$
+\end_inset
+
+ will not be tracked as it's index 1, is not given.
+\end_layout
+
+\begin_layout Standard
+
+\emph on
+The mkin file, converted to root, to be read
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/generator/InputFile kin_pi0p_100000.root
+\end_layout
+
+\begin_layout Standard
+The particles in the file and those to be tracked will be output to the
+ screen:
+\end_layout
+
+\begin_layout Standard
+A2PrimaryGeneratorAction::SetUpRootInput You have chosen to track 3 generated
+ particles.
+\end_layout
+
+\begin_layout Standard
+A2PrimaryGeneratorAction::SetUpRootInput, adding a pi0 as index 1
+\end_layout
+
+\begin_layout Standard
+A2PrimaryGeneratorAction::SetUpRootInput, adding a proton as index 2
+\end_layout
+
+\begin_layout Standard
+A2PrimaryGeneratorAction::SetUpRootInput, adding a gamma as index 3
+\end_layout
+
+\begin_layout Standard
+A2PrimaryGeneratorAction::SetUpRootInput, adding a gamma as index 4 
+\end_layout
+
+\begin_layout Standard
+Will track proton with index 2 
+\end_layout
+
+\begin_layout Standard
+Will track gamma with index 3
+\end_layout
+
+\begin_layout Standard
+Will track gamma with index 4 
+\begin_inset VSpace bigskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\noun on
+Note
+\noun default
+ if AqcuMC is used as the event generator it must store the output in ntuple
+ format not Tree format.
+\end_layout
+
+\begin_layout Subsection
+\begin_inset LatexCommand \label{sub:Interactive-Mode}
+
+\end_inset
+
+Interactive Mode
+\end_layout
+
+\begin_layout Standard
+This allows visualisation of the detectors and supports standard G4 gun/
+ commands to define the beam or can read an mkin generated file.
+ To run in this mode simply type A2 from the A2 directory.
+ Any detector set in the DetectorSetup.mac is drawn in the World volume.
+ The initial visualisation setup is defined in macros/vis.mac.
+ Currently I prefer the OGLIX style viewer, which requires command line
+ or macro based commands.
+ When using version 4.8.2, this viewer can be used to make movies.
+ Additionally the OGLIXm viewer (comment in line /vis/open OGLIXm) allows
+ changes in the picture using a GUI system, although this can crash if too
+ many commands are given.
+ 
+\end_layout
+
+\begin_layout Standard
+The DAWN viewer is best for detailed pictures but requires the downloading
+ of additional software.
+ Users are encouraged to try the many other viewers available.
+\end_layout
+
+\begin_layout Standard
+To run in interactive mode users should just type A2 from their G4WORKDIR.
+ The physics models can be changed in the macros/vis.mac file, as can the
+ default visualisation settings.
+\end_layout
+
+\begin_layout Standard
+To run an mkin event follow the commands in sec.
+ 
+\begin_inset LatexCommand \ref{sub:mkin-Input}
+
+\end_inset
+
+.
+ Alternatively define a beam using the gun/commands :
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/gun/particle proton 
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/gun/energy 100 MeV
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/gun/direction 1 0.1 0 
+\end_layout
+
+\begin_layout Standard
+With either method then type
+\color blue
+ /run/beamOn N
+\color none
+ to run N events.
+ The tracks will be drawn on detector picture.
+ In the case of the ball the crystals hit will be coloured with an intensity
+ depending on the energy deposit.
+ Alternatively the command 
+\color blue
+/A2/event/drawHitOpt option
+\color none
+ will change the colour coding to depend on either the (option=)time or
+ (option=)depth of the hit.
+ This command has to be run prior to the event.
+ In the case of TAPS and the PID currently the whole detector will be coloured
+ if any element is hit.
+\end_layout
+
+\begin_layout Standard
+For a list of all possible commands users can type help at the Idle> prompt.
+ This includes all standard G4 commands for visualisation, runs, events,
+ geometry...
+ As well as the new commands for A2, found in the A2 help directory.
+\end_layout
+
+\begin_layout Standard
+An output file can be writtein using the command :
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/event/setOutputFile test.root
+\end_layout
+
+\begin_layout Subsection
+Phase Space Mode
+\end_layout
+
+\begin_layout Standard
+The A2 simulation can be used to directly produce tracked phase space distributi
+ons of particles.
+ This can in turn be used to calculate detection efficiencys, energy loss
+ corrections, angular resolutions etc.
+ The following commands are used :
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+use phase space mode (1) (0 is command line 
+\begin_inset LatexCommand \ref{sub:Interactive-Mode}
+
+\end_inset
+
+, 2 is ROOT input 
+\begin_inset LatexCommand \ref{sub:mkin-Input}
+
+\end_inset
+
+ which is done outomatically if you specify an input file)
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/generator/Mode 1 
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+max and min kinetic energies
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/generator/SetTMax 300 MeV 
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/generator/SetTMin 0 MeV 
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+max and min angle 
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/generator/SetThetaMax 180 deg 
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/generator/SetThetaMin 0 deg
+\end_layout
+
+\begin_layout Standard
+
+\emph on
+for the vertex position
+\end_layout
+
+\begin_layout Standard
+
+\emph on
+gamma beam widths at target
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/generator/SetBeamXSigma 0.05 mm 
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/generator/SetBeamYSigma 0.05 mm
+\end_layout
+
+\begin_layout Standard
+
+\emph on
+target Z offset
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/generator/SetTargetZ0 0 mm 
+\end_layout
+
+\begin_layout Standard
+
+\emph on
+target thickness
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/generator/SetTargetThick 0.1 cm 
+\end_layout
+
+\begin_layout Standard
+
+\emph on
+target x-y radius
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/generator/SetTargetRadius 2 cm 
+\end_layout
+
+\begin_layout Standard
+The kinematics of the particle are stored for each event in the beam branch
+ of the ROOT output ntuple.
+\end_layout
+
+\begin_layout Standard
+See also doPhaseSpace.mac.
+\end_layout
+
+\begin_layout Subsection
+Overlap Mode
+\end_layout
+
+\begin_layout Standard
+As an extention to standard phase space you can also create an additional
+ particle at a fixed angle to the first, this maybe useful for investigating
+ overlapping cluster algorithms.
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/generator/Mode 3
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+A2/generator/SetSplitTheta 10 deg
+\end_layout
+
+\begin_layout Standard
+The rest of the commands are as for phase space.
+\end_layout
+
+\begin_layout Subsection
+Batch Mode
+\end_layout
+
+\begin_layout Standard
+Running in batch mode is straightforward, the executable is given a series
+ of commands by a macro file which are implemented before the run.
+ Currently this will contain the mkin setup commands from sec.
+ 
+\begin_inset LatexCommand \ref{sub:mkin-Input}
+
+\end_inset
+
+, and an output file to write the tracked ntuple.
+ The latter is done via the command :
+\end_layout
+
+\begin_layout Standard
+
+\color blue
+/A2/event/setOutputFile test.root
+\end_layout
+
+\begin_layout Standard
+For example to track the mkin input file kin_pi0p_100000.root, change the
+ path to this file in macros/doppi0.mac to wherever you have saved the file
+ and give a suitable output file name.
+ The from the A2 directory type :
+\end_layout
+
+\begin_layout Standard
+A2 macros/doppi0.mac
+\end_layout
+
+\begin_layout Standard
+A large amount of set up info will scroll down the screen giving info on
+ the geometry, physics processes etc.
+ If the output file does not exist the simulation will start tracking.
+ If it does exist the user will be prompted to overwrite or supply a new
+ file name.
+\end_layout
+
+\begin_layout Standard
+On my laptop the example above takes around 2 hours to run.
+\end_layout
+
+\begin_layout Standard
+The output file can then be read into AcquRoot as in the case of the cbsim
+ output.
+\end_layout
+
+\begin_layout Standard
+NEW, it is also possible to omit the setOutputFile and Inputfile commands
+ and just give the full address of a .root file as a second command line
+ arguement, i.e :
+\end_layout
+
+\begin_layout Standard
+A2 macros/doppi0.mac /scratch/analysethis.root
+\end_layout
+
+\begin_layout Standard
+The output file is prepended with 
+\begin_inset Quotes eld
+\end_inset
+
+tr_
+\begin_inset Quotes erd
+\end_inset
+
+ and placed in the same directory as the input file.
+ The setOutputFile and Inputfile commands in the macro should be removed
+ or they will overwrite the command line filename.
+\end_layout
+
+\begin_layout Subsection
+Output
+\end_layout
+
+\begin_layout Standard
+
+\color red
+Out of date-Currently 3 extra branches have been added to the ROOT output.
+ These are NaI crystal time, TAPS veto ID and TAPS veto energy.
+ 
+\end_layout
+
+\begin_layout Standard
+Branches from cbsim that exist but are not filled are eleak, and etapfs.
+\end_layout
+
+\begin_layout Standard
+To run the output file through the AcquRoot reconstruction analysis the
+ command should be :
+\end_layout
+
+\begin_layout Standard
+AcquRoot --offline CB_A2MC.Offline
+\end_layout
+
+\begin_layout Standard
+Where CB_A2MC.Offline is a setup file found in your $acqu/data directory.
+ The name of the G4 output file should be specified in CBMC.Offline.
+ The correct tree of setup files should be chosen for MAMI-B and MAMI-C
+ beamtimes.
+ Examples are given in the A2/acquroot directory
+\end_layout
+
+\begin_layout Section
+Things to be done...
+\end_layout
+
+\begin_layout Itemize
+TAPS PbW0 modules.
+\end_layout
+
+\begin_layout Itemize
+TAPS fast and slow gates.
+\end_layout
+
+\begin_layout Itemize
+Optimise tracking algorithm via particle threshold cuts and G4Regions.
+\end_layout
+
+\begin_layout Itemize
+Investigation of different physics processes.
+\end_layout
+
+\begin_layout Itemize
+Validation exercises, e.g.
+ particle detection efficiencies, neutron energy deposits...
+ 
+\end_layout
+
+\end_body
+\end_document

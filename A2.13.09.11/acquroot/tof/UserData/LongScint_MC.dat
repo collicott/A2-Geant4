@@ -1,0 +1,101 @@
+##-----------------------------------------------------------------------
+##--Author	JRM Annand   29th Apr 2003
+##--Update	JRM Annand...
+##--Description
+##                *** Acqu++ <-> Root ***
+## Online/Offline Analysis of Sub-Atomic Physics Experimental Data 
+##
+## Parameter File: LongScint.data
+## Setup of decoding of array of long scintillator bars
+## 4-bar cosmic-ray tests Glasgow Nov 04
+##
+##-----------------------------------------------------------------------
+## Total # Elements in array, Pulse-Height info? Time info? Position info?
+## Info switch is off/on = 0/1
+##	Total	Energy?	Time?	Position?
+Size:	32	1	1	1
+##
+## Calibration factors for each PMT...one line for each
+## Can optionally enter TDC-Time onfo...extra 5 parameters per line
+## low, high are energy cuts, ped is the pedestal, MeV/chan conversion gain
+##	ADC# low high	ped MeV/ch	TDC# low/high/of ns/ch  Pos xyz (cm)
+Element:  1  0.1 1000	68  0.1		101    0 100 210 0.25  70 150 297.5
+Element:  2  0.1 1000	68  0.1		101    0 100 210 0.25  70 -150 297.5
+Element:  3  0.1 1000	68  0.1		101    0 100 210 0.25  50 150 297.5
+Element:  4  0.1 1000	68  0.1		101    0 100 210 0.25  50 -150 297.5
+Element:  5  0.1 1000	68  0.1		101    0 100 210 0.25  30 150 297.5
+Element:  6  0.1 1000	68  0.1		101    0 100 210 0.25  30 -150 297.5
+Element:  7  0.1 1000	68  0.1		101    0 100 210 0.25  10 150 297.5
+Element:  8  0.1 1000	68  0.1		101    0 100 210 0.25  10 -150 297.5
+Element:  9  0.1 1000	68  0.1		101    0 100 210 0.25  -10 150 297.5
+Element: 10  0.1 1000	68  0.1		101    0 100 210 0.25  -10 -150 297.5
+Element: 11  0.1 1000	68  0.1		101    0 100 210 0.25  -30 150 297.5
+Element: 12  0.1 1000	68  0.1		101    0 100 210 0.25  -30 -150 297.5
+Element: 13  0.1 1000	68  0.1		101    0 100 210 0.25  -50 150 297.5
+Element: 14  0.1 1000	68  0.1		101    0 100 210 0.25  -50 -150 297.5
+Element: 15  0.1 1000	68  0.1		101    0 100 210 0.25  -70 150 297.5
+Element: 16  0.1 1000	68  0.1		101    0 100 210 0.25  -70 -150 297.5
+Element: 17  0.1 1000	68  0.1		101    0 100 210 0.25  70 150 302.5
+Element: 18  0.1 1000	68  0.1		101    0 100 210 0.25  70 -150 302.5
+Element: 19  0.1 1000	68  0.1		101    0 100 210 0.25  50 150 302.5
+Element: 20  0.1 1000	68  0.1		101    0 100 210 0.25  50 -150 302.5
+Element: 21  0.1 1000	68  0.1		101    0 100 210 0.25  30 150 302.5
+Element: 22  0.1 1000	68  0.1		101    0 100 210 0.25  30 -150 302.5
+Element: 23  0.1 1000	68  0.1		101    0 100 210 0.25  10 150 302.5
+Element: 24  0.1 1000	68  0.1		101    0 100 210 0.25  10 -150 302.5
+Element: 25  0.1 1000	68  0.1		101    0 100 210 0.25  -10 150 302.5
+Element: 26  0.1 1000	68  0.1		101    0 100 210 0.25  -10 -150 302.5
+Element: 27  0.1 1000	68  0.1		101    0 100 210 0.25  -30 150 302.5
+Element: 28  0.1 1000	68  0.1		101    0 100 210 0.25  -30 -150 302.5
+Element: 29  0.1 1000	68  0.1		101    0 100 210 0.25  -50 150 302.5
+Element: 30  0.1 1000	68  0.1		101    0 100 210 0.25  -50 -150 302.5
+Element: 31  0.1 1000	68  0.1		101    0 100 210 0.25  -70 150 302.5
+Element: 32  0.1 1000	68  0.1		101    0 100 210 0.25  -70 -150 302.5
+
+##
+## No. or bars in array...Bar-Size should normally be Size/2
+Bar-Size: 16
+NVetos: 8
+## Associate PMT's to bars
+##	PMT1	PMT2	Ceff(cm/ns)	y-extent(cm)	z-extent(cm)
+Bar:	0	1	20		20		5
+Bar:	2	3	20		20		5
+Bar:	4	5	20		20		5
+Bar:	6	7	20		20		5
+Bar:	8	9	20		20		5
+Bar:	10	11	20		20		5
+Bar:	12	13	20		20		5
+Bar:	14	15	20		20		5
+Bar:	16	17	20		20		5
+Bar:	18	19	20		20		5
+Bar:	20	21	20		20		5
+Bar:	22	23	20		20		5
+Bar:	24	25	20		20		5
+Bar:	26	27	20		20		5
+Bar:	28	29	20		20		5
+Bar:	30	31	20		20		5
+##
+##
+## Do some further array initialisation BEFORE display specification
+Initialise:
+##
+#ata-Cut:  1D   NBarHits	AND    data           4 4
+##	Histograming of basic detector stuff
+##
+## Hit ultiplicity, 12 channels, range 0 -- 11
+Display:	1D	Nhits  	8	0	8
+## Hit frequency distribution, 12 channels, range 0 -- 11
+#Display:	1D	Hits		24	0	24
+## Total Energy deposited in the array, 1000 channels, range 0 -- 200 MeV
+#Display:	1D	Etot	 400 	0 	200
+## Energy deposited in individual elements, 200 channels, range 0 -- 20 MeV
+Display: 1D	Energy		100 0 100	0 7
+Display: 1D	Time		80 0  20	0 7
+Display: 1D	MeanEnergyOR	200 0 100
+Display: 1D	MeanTimeOR	 80 0  40
+Display: 1D	TimeDiffOR	 90 -15 15
+Display	 1D	BarHits		48   0 48
+Display	 1D	NBarHits        10   0 10
+##
+Display: 2D	MeanTimeOR 90 0 90 -1	MeanEnergyOR 50 0 100 -1
+##

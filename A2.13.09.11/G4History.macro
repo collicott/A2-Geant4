@@ -1,0 +1,20 @@
+/run/verbose 2
+/vis/scene/create
+/tracking/storeTrajectory 1
+/vis/scene/endOfEventAction accumulate
+/vis/open OGLIX
+/vis/sceneHandler/create OGLIX
+/vis/sceneHandler/attach
+/vis/viewer/create ! ! 600
+/vis/viewer/refresh
+/vis/scene/notifyHandlers
+/vis/viewer/set/viewpointThetaPhi 130. 40.
+/vis/viewer/refresh
+/vis/viewer/set/style surface
+/vis/viewer/refresh
+/tracking/storeTrajectory 1
+/gun/particle kaon+
+/gun/energy 300 MeV
+/particle/select kaon+
+/gun/direction 0. 1. 0
+/gun/position 0 0 0

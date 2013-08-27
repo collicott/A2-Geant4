@@ -1,0 +1,5 @@
+# Ignore Source and tmp files
+/Source/
+/tmp/
+# Ignore examples from G4
+/examples/

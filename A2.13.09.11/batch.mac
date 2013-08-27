@@ -1,0 +1,8 @@
+/A2/physics/Physics QGSP_BIC
+/run/initialize
+/A2/generator/Seed 1111111
+/A2/generator/NToBeTracked 2
+/A2/generator/Track 1
+/A2/generator/Track 2
+/A2/generator/InputFile evgen/10cm/compton_p_250_in.root
+/A2/event/setOutputFile out/compton/LH2_10cm/compton_p_250_out.root
