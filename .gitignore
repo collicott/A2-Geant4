@@ -3,3 +3,7 @@
 /tmp/
 # Ignore examples from G4
 /examples/
+# Ignore cbremROOT
+/cbremROOT
+# Ignore macros
+macros
