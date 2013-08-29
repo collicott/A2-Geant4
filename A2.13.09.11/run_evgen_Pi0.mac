@@ -1,0 +1,9 @@
+/A2/physics/Physics QGSP_BIC
+/run/initialize
+/A2/generator/Seed 1111111
+/A2/generator/NToBeTracked 3
+/A2/generator/Track 1
+/A2/generator/Track 2
+/A2/generator/Track 3
+/A2/generator/InputFile $HOME/Root/EvGen/out/10cm/pi0_p_250_in.root
+/A2/event/setOutputFile out/Evgen/Pi0_p_250_out.root

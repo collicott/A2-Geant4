@@ -6,9 +6,9 @@
 # Ignore cbremROOT
 /cbremROOT
 # Ignore macros
-macros
-acquroot
-cbsim
-pics
+/macros/
+/acquroot/
+/cbsim/
+/pics/
 #Ignore produced root files
 *.root
